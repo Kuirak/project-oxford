@@ -1,8 +1,7 @@
 'use strict';
 
 var request = require('request'),
-    fs = require('fs'),
-    _Promise = require('bluebird');
+    fs = require('fs');
 
 var detectUrl = 'https://api.projectoxford.ai/face/v0/detections';
 var similarUrl = 'https://api.projectoxford.ai/face/v0/findsimilars';
@@ -24,13 +23,13 @@ var face = function face(key) {
         if (error) {
             return reject(error);
         }
-        
-        if (response.statusCode != 200) {
+
+        if (response.statusCode !== 200) {
             reject(response.body);
         }
 
         return resolve(response.body);
-    };
+    }
 
     /**
      * (Private) Call the Face Detected API using a stream of an image
@@ -41,7 +40,7 @@ var face = function face(key) {
      * @return {Promise}            - Promise resolving with the resulting JSON
      */
     function _detectStream(stream, options) {
-        return new _Promise(function (resolve, reject) {
+        return new Promise(function (resolve, reject) {
             stream.pipe(request.post({
                 uri: detectUrl,
                 headers: {
@@ -54,7 +53,7 @@ var face = function face(key) {
                 _return(error, response, resolve, reject);
             }));
         });
-    };
+    }
 
     /**
      * (Private) Call the Face Detected API using a local image
@@ -66,7 +65,7 @@ var face = function face(key) {
      */
     function _detectLocal(image, options) {
         return _detectStream(fs.createReadStream(image), options);
-    };
+    }
 
     /**
      * (Private) Call the Face Detected API using a uri to an online image
@@ -77,7 +76,7 @@ var face = function face(key) {
      * @return {Promise}            - Promise resolving with the resulting JSON
      */
     function _detectOnline(image, options) {
-        return new _Promise(function (resolve, reject) {
+        return new Promise(function (resolve, reject) {
             request.post({
                 uri: detectUrl,
                 headers: { 'Ocp-Apim-Subscription-Key': key },
@@ -88,7 +87,7 @@ var face = function face(key) {
                 return _return(error, response, resolve, reject);
             });
         });
-    };
+    }
 
     /**
      * Call the Face Detected API
@@ -126,7 +125,7 @@ var face = function face(key) {
         if (options.stream) {
             return _detectStream(options.stream, qs);
         }
-    };
+    }
 
     /**
      * Detect similar faces using faceIds (as returned from the detect API)
@@ -135,7 +134,7 @@ var face = function face(key) {
      * @return {Promise}                    - Promise resolving with the resulting JSON
      */
     function similar(sourceFace, candidateFaces) {
-        return new _Promise(function (resolve, reject) {
+        return new Promise(function (resolve, reject) {
             var faces = {
                 faceId: sourceFace,
                 faceIds: candidateFaces
@@ -150,7 +149,7 @@ var face = function face(key) {
                 return _return(error, response, resolve, reject);
             });
         });
-    };
+    }
 
     /**
      * Divides candidate faces into groups based on face similarity using faceIds.
@@ -167,7 +166,7 @@ var face = function face(key) {
      * @return {Promise}            - Promise resolving with the resulting JSON
      */
     function grouping(faces) {
-        return new _Promise(function (resolve, reject) {
+        return new Promise(function (resolve, reject) {
             if (faces) {
                 faces = { faceIds: faces };
             }
@@ -181,7 +180,7 @@ var face = function face(key) {
                 return _return(error, response, resolve, reject);
             });
         });
-    };
+    }
 
     /**
      * Identifies persons from a person group by one or more input faces.
@@ -195,7 +194,7 @@ var face = function face(key) {
      * @return {Promise}            - Promise resolving with the resulting JSON
      */
     function identify(faces, options) {
-        return new _Promise(function (resolve, reject) {
+        return new Promise(function (resolve, reject) {
             var body = {};
 
             if (options && options.personGroupId) {
@@ -217,7 +216,7 @@ var face = function face(key) {
                 return _return(error, response, resolve, reject);
             });
         });
-    };
+    }
 
     /**
      * Analyzes two faces and determine whether they are from the same person.
@@ -227,7 +226,7 @@ var face = function face(key) {
      * @return {Promise}            - Promise resolving with the resulting JSON
      */
     function verify(faces) {
-        return new _Promise(function (resolve, reject) {
+        return new Promise(function (resolve, reject) {
             if (faces && faces.length > 1) {
                 var body = {
                     faceId1: faces[0],
@@ -246,7 +245,7 @@ var face = function face(key) {
                 return reject('Faces array must contain two face ids');
             }
         });
-    };
+    }
 
     /**
      * @namespace
@@ -264,7 +263,7 @@ var face = function face(key) {
          * @return {Promise}                    - Promise resolving with the resulting JSON
          */
         create: function create(personGroupId, name, userData) {
-            return new _Promise(function (resolve, reject) {
+            return new Promise(function (resolve, reject) {
                 request.put({
                     uri: personGroupUrl + '/' + personGroupId,
                     headers: { 'Ocp-Apim-Subscription-Key': key },
@@ -286,7 +285,7 @@ var face = function face(key) {
          * @return {Promise}                    - Promise resolving with the resulting JSON
          */
         'delete': function _delete(personGroupId) {
-            return new _Promise(function (resolve, reject) {
+            return new Promise(function (resolve, reject) {
                 request({
                     method: 'DELETE',
                     uri: personGroupUrl + '/' + personGroupId,
@@ -304,7 +303,7 @@ var face = function face(key) {
          * @return {Promise}                    - Promise resolving with the resulting JSON
          */
         get: function get(personGroupId) {
-            return new _Promise(function (resolve, reject) {
+            return new Promise(function (resolve, reject) {
                 request({
                     uri: personGroupUrl + '/' + personGroupId,
                     headers: { 'Ocp-Apim-Subscription-Key': key }
@@ -324,7 +323,7 @@ var face = function face(key) {
          * @return {Promise}                    - Promise resolving with the resulting JSON
          */
         trainingStatus: function trainingStatus(personGroupId) {
-            return new _Promise(function (resolve, reject) {
+            return new Promise(function (resolve, reject) {
                 request({
                     uri: personGroupUrl + '/' + personGroupId + '/training',
                     headers: { 'Ocp-Apim-Subscription-Key': key }
@@ -345,7 +344,7 @@ var face = function face(key) {
          * @return {Promise}                    - Promise resolving with the resulting JSON
          */
         trainingStart: function trainingStart(personGroupId) {
-            return new _Promise(function (resolve, reject) {
+            return new Promise(function (resolve, reject) {
                 request.post({
                     uri: personGroupUrl + '/' + personGroupId + '/training',
                     headers: { 'Ocp-Apim-Subscription-Key': key }
@@ -365,7 +364,7 @@ var face = function face(key) {
          * @return {Promise}                    - Promise resolving with the resulting JSON
          */
         update: function update(personGroupId, name, userData) {
-            return new _Promise(function (resolve, reject) {
+            return new Promise(function (resolve, reject) {
                 request.patch({
                     uri: personGroupUrl + '/' + personGroupId,
                     headers: { 'Ocp-Apim-Subscription-Key': key },
@@ -385,7 +384,7 @@ var face = function face(key) {
          * @return {Promise}                    - Promise resolving with the resulting JSON
          */
         list: function list() {
-            return new _Promise(function (resolve, reject) {
+            return new Promise(function (resolve, reject) {
                 request({
                     uri: personGroupUrl,
                     headers: { 'Ocp-Apim-Subscription-Key': key }
@@ -414,7 +413,7 @@ var face = function face(key) {
          * @return {Promise}                 - Promise resolving with the resulting JSON
          */
         addFace: function addFace(personGroupId, personId, faceId, userData) {
-            return new _Promise(function (resolve, reject) {
+            return new Promise(function (resolve, reject) {
                 request.put({
                     uri: personUrl + '/' + personGroupId + '/persons/' + personId + '/faces/' + faceId,
                     headers: { 'Ocp-Apim-Subscription-Key': key },
@@ -435,7 +434,7 @@ var face = function face(key) {
          * @return {Promise}                 - Promise resolving with the resulting JSON
          */
         deleteFace: function deleteFace(personGroupId, personId, faceId) {
-            return new _Promise(function (resolve, reject) {
+            return new Promise(function (resolve, reject) {
                 request({
                     method: 'DELETE',
                     uri: personUrl + '/' + personGroupId + '/persons/' + personId + '/faces/' + faceId,
@@ -456,7 +455,7 @@ var face = function face(key) {
          * @return {Promise}                 - Promise resolving with the resulting JSON
          */
         updateFace: function updateFace(personGroupId, personId, faceId, userData) {
-            return new _Promise(function (resolve, reject) {
+            return new Promise(function (resolve, reject) {
                 request.patch({
                     uri: personUrl + '/' + personGroupId + '/persons/' + personId + '/faces/' + faceId,
                     headers: { 'Ocp-Apim-Subscription-Key': key },
@@ -477,7 +476,7 @@ var face = function face(key) {
          * @return {Promise}                 - Promise resolving with the resulting JSON
          */
         getFace: function getFace(personGroupId, personId, faceId) {
-            return new _Promise(function (resolve, reject) {
+            return new Promise(function (resolve, reject) {
                 request({
                     uri: personUrl + '/' + personGroupId + '/persons/' + personId + '/faces/' + faceId,
                     headers: { 'Ocp-Apim-Subscription-Key': key }
@@ -500,7 +499,7 @@ var face = function face(key) {
          * @return {Promise}                 - Promise resolving with the resulting JSON
          */
         create: function create(personGroupId, faces, name, userData) {
-            return new _Promise(function (resolve, reject) {
+            return new Promise(function (resolve, reject) {
                 request.post({
                     uri: personUrl + '/' + personGroupId + '/persons',
                     headers: { 'Ocp-Apim-Subscription-Key': key },
@@ -524,7 +523,7 @@ var face = function face(key) {
          * @return {Promise}                 - Promise resolving with the resulting JSON
          */
         'delete': function _delete(personGroupId, personId) {
-            return new _Promise(function (resolve, reject) {
+            return new Promise(function (resolve, reject) {
                 request({
                     method: 'DELETE',
                     uri: personUrl + '/' + personGroupId + '/persons/' + personId,
@@ -543,7 +542,7 @@ var face = function face(key) {
          * @return {Promise}                 - Promise resolving with the resulting JSON
          */
         get: function get(personGroupId, personId) {
-            return new _Promise(function (resolve, reject) {
+            return new Promise(function (resolve, reject) {
                 request({
                     uri: personUrl + '/' + personGroupId + '/persons/' + personId,
                     headers: { 'Ocp-Apim-Subscription-Key': key }
@@ -564,7 +563,7 @@ var face = function face(key) {
          * @return {Promise}                 - Promise resolving with the resulting JSON
          */
         update: function update(personGroupId, personId, faces, name, userData) {
-            return new _Promise(function (resolve, reject) {
+            return new Promise(function (resolve, reject) {
                 request.patch({
                     uri: personUrl + '/' + personGroupId + '/persons/' + personId,
                     headers: { 'Ocp-Apim-Subscription-Key': key },
@@ -587,7 +586,7 @@ var face = function face(key) {
          * @return {Promise}                 - Promise resolving with the resulting JSON
          */
         list: function list(personGroupId) {
-            return new _Promise(function (resolve, reject) {
+            return new Promise(function (resolve, reject) {
                 request({
                     uri: personUrl + '/' + personGroupId + '/persons',
                     headers: { 'Ocp-Apim-Subscription-Key': key }

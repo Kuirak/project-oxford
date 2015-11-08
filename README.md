@@ -184,6 +184,7 @@ set of rich visual features based on the image content.
 | options | <code>Object</code> | Options object describing features to extract |
 | options.url | <code>string</code> | Url to image to be analyzed |
 | options.path | <code>string</code> | Path to image to be analyzed |
+| options.stream | <code>stream</code> | Stream for image to be analyzed |
 | options.ImageType | <code>boolean</code> | Detects if image is clipart or a line drawing. |
 | options.Color | <code>boolean</code> | Determines the accent color, dominant color, if image is black&white. |
 | options.Faces | <code>boolean</code> | Detects if faces are present. If present, generate coordinates, gender and age. |
@@ -204,6 +205,7 @@ specify an aspect ratio that differs from the input image.
 | options | <code>Object</code> | Options object describing features to extract |
 | options.url | <code>string</code> | Url to image to be thumbnailed |
 | options.path | <code>string</code> | Path to image to be thumbnailed |
+| options.stream | <code>stream</code> | Stream for image to be analyzed |
 | options.width | <code>number</code> | Width of the thumb in pixels |
 | options.height | <code>number</code> | Height of the thumb in pixels |
 | options.smartCropping | <code>boolean</code> | Should SmartCropping be enabled? |
@@ -221,6 +223,7 @@ characters into a machine-usable character stream.
 | options | <code>Object</code> | Options object describing features to extract |
 | options.url | <code>string</code> | Url to image to be analyzed |
 | options.path | <code>string</code> | Path to image to be analyzed |
+| options.stream | <code>stream</code> | Stream for image to be analyzed |
 | options.language | <code>string</code> | BCP-47 language code of the text to be detected in the image. Default value is "unk", then the service will auto detect the language of the text in the image. |
 | options.detectOrientation | <code>string</code> | Detect orientation of text in the image |
 

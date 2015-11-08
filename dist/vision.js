@@ -1,14 +1,13 @@
 'use strict';
 
 var request = require('request'),
-    fs = require('fs'),
-    _Promise = require('bluebird');
+    fs = require('fs');
 
 var analyzeUrl = 'https://api.projectoxford.ai/vision/v1/analyses';
 var thumbnailUrl = 'https://api.projectoxford.ai/vision/v1/thumbnails';
 var ocrUrl = 'https://api.projectoxford.ai/vision/v1/ocr';
 
-/** 
+/**
  * @namespace
  * @memberof Client
  */
@@ -21,23 +20,23 @@ var vision = function vision(key) {
             return reject(error);
         }
 
-        if (response.statusCode != 200) {
+        if (response.statusCode !== 200) {
             reject(response.body);
         }
 
         return resolve(response.body);
-    };
+    }
 
     /**
-     * (Private) Analyze a local image, using a fs pipe
+     * (Private) Analyze a local image, using a stream
      * @private
-     * @param  {string} image       - Path to image
+     * @param  {stream} stream      - Stream for image
      * @param  {Object} options     - Options object
      * @return {Promise}            - Promise resolving with the resulting JSON
      */
-    function _analyzeLocal(image, options) {
-        return new _Promise(function (resolve, reject) {
-            fs.createReadStream(image).pipe(request.post({
+    function _analyzeStreamLocal(stream, options) {
+        return new Promise(function (resolve, reject) {
+            stream.pipe(request.post({
                 uri: analyzeUrl,
                 headers: {
                     'Ocp-Apim-Subscription-Key': key,
@@ -52,6 +51,17 @@ var vision = function vision(key) {
     }
 
     /**
+     * (Private) Analyze a local image, using a fs pipe
+     * @private
+     * @param  {string} image       - Path to image
+     * @param  {Object} options     - Options object
+     * @return {Promise}            - Promise resolving with the resulting JSON
+     */
+    function _analyzeLocal(image, options) {
+        return _analyzeStreamLocal(fs.createReadStream(image), options);
+    }
+
+    /**
      * (Private) Analyze an online image
      * @private
      * @param  {string} image       - Url to image
@@ -59,7 +69,7 @@ var vision = function vision(key) {
      * @return {Promise}            - Promise resolving with the resulting JSON
      */
     function _analyzeOnline(image, options) {
-        return new _Promise(function (resolve, reject) {
+        return new Promise(function (resolve, reject) {
             request.post({
                 uri: analyzeUrl,
                 headers: { 'Ocp-Apim-Subscription-Key': key },
@@ -104,18 +114,21 @@ var vision = function vision(key) {
         if (options.url) {
             return _analyzeOnline(options.url, qs);
         }
+        if (options.stream) {
+            return _analyzeStreamLocal(options.stream, qs);
+        }
     }
 
     /**
-     * (Private) Get a thumbnail for a local image, using a fs pipe
+     * (Private) Get a thumbnail for a local image, using a stream
      * @private
-     * @param  {string} image       - Path to image
+     * @param  {stream} stream      - Stream for image
      * @param  {Object} options     - Options object
      * @return {Promise}            - Promise resolving with the resulting JSON
      */
-    function _thumbnailLocal(image, options, pipe) {
-        return new _Promise(function (resolve, reject) {
-            fs.createReadStream(image).pipe(request.post({
+    function _thumbnailStreamLocal(stream, options, pipe) {
+        return new Promise(function (resolve, reject) {
+            stream.pipe(request.post({
                 uri: thumbnailUrl,
                 headers: {
                     'Ocp-Apim-Subscription-Key': key,
@@ -129,6 +142,17 @@ var vision = function vision(key) {
     }
 
     /**
+     * (Private) Get a thumbnail for a local image, using a fs pipe
+     * @private
+     * @param  {string} image       - Path to image
+     * @param  {Object} options     - Options object
+     * @return {Promise}            - Promise resolving with the resulting JSON
+     */
+    function _thumbnailLocal(image, options, pipe) {
+        return _thumbnailStreamLocal(fs.createReadStream(image), options, pipe);
+    }
+
+    /**
      * (Private) Get a thumbnail for am online image
      * @private
      * @param  {string} image       - url to image
@@ -136,7 +160,7 @@ var vision = function vision(key) {
      * @return {Promise}            - Promise resolving with the resulting JSON
      */
     function _thumbnailOnline(image, options, pipe) {
-        return new _Promise(function (resolve, reject) {
+        return new Promise(function (resolve, reject) {
             request.post({
                 uri: thumbnailUrl,
                 headers: { 'Ocp-Apim-Subscription-Key': key },
@@ -177,18 +201,20 @@ var vision = function vision(key) {
         if (options.url) {
             return _thumbnailOnline(options.url, qs, options.pipe);
         }
+        if (options.stream) {
+            return _thumbnailStreamLocal(options.stream, qs, options.pipe);
+        }
     }
-
     /**
-     * (Private) OCR a local image, using a fs pipe
+     * (Private) OCR a local image, using a stream
      * @private
-     * @param  {string} image       - Path to image
+     * @param  {string} stream      - Stream for image
      * @param  {Object} options     - Options object
      * @return {Promise}            - Promise resolving with the resulting JSON
      */
-    function _ocrLocal(image, options) {
-        return new _Promise(function (resolve, reject) {
-            fs.createReadStream(image).pipe(request.post({
+    function _ocrLocalStream(stream, options) {
+        return new Promise(function (resolve, reject) {
+            stream.pipe(request.post({
                 uri: ocrUrl,
                 headers: {
                     'Ocp-Apim-Subscription-Key': key,
@@ -203,6 +229,17 @@ var vision = function vision(key) {
     }
 
     /**
+     * (Private) OCR a local image, using a fs pipe
+     * @private
+     * @param  {string} image       - Path to image
+     * @param  {Object} options     - Options object
+     * @return {Promise}            - Promise resolving with the resulting JSON
+     */
+    function _ocrLocal(image, options) {
+        return _ocrLocalStream(fs.createReadStream(image), options);
+    }
+
+    /**
      * (Private) OCR an online image
      * @private
      * @param  {string} image       - url to image
@@ -210,7 +247,7 @@ var vision = function vision(key) {
      * @return {Promise}            - Promise resolving with the resulting JSON
      */
     function _ocrOnline(image, options) {
-        return new _Promise(function (resolve, reject) {
+        return new Promise(function (resolve, reject) {
             request.post({
                 uri: ocrUrl,
                 headers: { 'Ocp-Apim-Subscription-Key': key },
@@ -245,6 +282,9 @@ var vision = function vision(key) {
         }
         if (options.url) {
             return _ocrOnline(options.url, qs);
+        }
+        if (options.stream) {
+            return _ocrLocalStream(options.stream, qs);
         }
     }
 
